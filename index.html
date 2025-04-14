@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Makine Öğrenmesi Kavramsal Sınav</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    .quiz-container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .question { font-size: 18px; margin: 20px 0 10px; }
+    .options label { display: block; margin-bottom: 5px; cursor: pointer; }
+    button { background: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin-top: 20px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .result { font-size: 20px; margin-top: 20px; font-weight: bold; }
+    .review { font-size: 16px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h2>Makine Öğrenmesi Kavramsal Sınav</h2>
+    <div id="quiz"></div>
+    <button onclick="submitQuiz()">Sınavı Bitir</button>
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    const questions = [
+      // Hedef 1: Kavramsal Anlayış
+      { q: "Makine öğrenmesinin amacı nedir?", o: ["Veriyi depolamak", "İnsan zekasını taklit etmek", "Veriden öğrenerek tahminler yapmak", "Veriyi görselleştirmek"], a: 2 },
+      { q: "Denetimli öğrenmede kullanılan veri türü nedir?", o: ["Etiketlenmemiş", "Etiketlenmiş", "Eksik", "Karışık"], a: 1 },
+      { q: "Makine öğrenmesi hangi disiplinlerin birleşiminden oluşur?", o: ["Fizik ve Kimya", "İstatistik ve Bilgisayar Bilimi", "Biyoloji ve Genetik", "Sosyoloji ve Tarih"], a: 1 },
+      { q: "Doğruluk (accuracy) nedir?", o: ["Yanlışların yüzdesi", "Doğru tahminlerin toplam içindeki oranı", "Toplam tahmin sayısı", "Veri büyüklüğü"], a: 1 },
+      { q: "Regresyon problemi neyi tahmin eder?", o: ["Sınıf", "Etiket", "Sürekli değer", "Doğruluk"], a: 2 },
+
+      // Hedef 2: Uygulama Bilgisi
+      { q: "Veri setinde eksik veriler varsa ilk yapılması gereken nedir?", o: ["Veriyi silmek", "Eksik verileri analiz etmek", "Model eğitmek", "Görselleştirme yapmak"], a: 1 },
+      { q: "Modelin aşırı öğrenme (overfitting) yaptığı nasıl anlaşılır?", o: ["Test verisinde düşük başarı", "Eğitim verisinde düşük başarı", "Eğitim ve test başarısı eşitse", "Model hiç öğrenemiyorsa"], a: 0 },
+      { q: "Veri ön işleme adımlarından biri değildir:", o: ["Özellik seçimi", "Eksik veri tamamlamak", "Model eğitmek", "Normalizasyon"], a: 2 },
+      { q: "Veri setini eğitim ve test olarak ayırmanın amacı nedir?", o: ["Zaman kazandırmak", "Genelleme başarısını ölçmek", "Modeli hızlı eğitmek", "Doğruluğu artırmak"], a: 1 },
+      { q: "Bir sınıflandırma problemi çözülmek isteniyor. Hangi yöntem uygundur?", o: ["K-Means", "Decision Tree", "PCA", "Histogram"], a: 1 },
+
+      // Hedef 3: Kod ve Kütüphane Bilgisi
+      { q: "Scikit-learn kütüphanesi ne için kullanılır?", o: ["Veritabanı yönetimi", "Makine öğrenmesi algoritmaları", "Web geliştirme", "Veri saklama"], a: 1 },
+      { q: "Pandas kütüphanesi ile aşağıdakilerden hangisi yapılmaz?", o: ["Veri analizi", "Veri çerçevesi oluşturmak", "Makine öğrenmesi eğitimi", "Eksik değer analizi"], a: 2 },
+      { q: "model.fit(X, y) kodu ne işe yarar?", o: ["Modeli kaydeder", "Veriyi görselleştirir", "Modeli eğitir", "Tahmin yapar"], a: 2 },
+      { q: "train_test_split fonksiyonu hangi kütüphaneye aittir?", o: ["NumPy", "Pandas", "Scikit-learn", "Matplotlib"], a: 2 },
+      { q: "LogisticRegression() sınıfı hangi probleme uygundur?", o: ["Kümelendirme", "Regresyon", "Sınıflandırma", "Veri temizleme"], a: 2 },
+
+      // Karışık + Bağlantılı
+      { q: "Confusion Matrix neyi gösterir?", o: ["Veri sayısını", "Doğru/yanlış tahminleri", "Algoritma türünü", "Veri türünü"], a: 1 },
+      { q: "ROC eğrisi hangi iki oranı karşılaştırır?", o: ["Doğruluk ve hata", "Precision ve recall", "TPR ve FPR", "Örnek sayısı ve hata"], a: 2 },
+      { q: "F1 skoru neden önemlidir?", o: ["Precision ve recall dengesini sağlar", "Veri setini küçültür", "Modeli eğitir", "Etiketleri ayıklar"], a: 0 }
+    ];
+
+    function submitQuiz() {
+      let score = 0;
+      const quizDiv = document.getElementById("quiz");
+      const resultDiv = document.getElementById("result");
+      const userAnswers = document.querySelectorAll("input[type=radio]:checked");
+      if (userAnswers.length < questions.length) return alert("Tüm soruları cevaplayın!");
+
+      questions.forEach((q, i) => {
+        if (parseInt(userAnswers[i].value) === q.a) score++;
+      });
+
+      let resultText = `<p>Toplam Doğru: ${score} / ${questions.length}</p>`;
+      resultText += `<div class='review'><strong>Cevap Anahtarı:</strong><br>`;
+      questions.forEach((q, i) => {
+        const correct = q.o[q.a];
+        const user = q.o[parseInt(userAnswers[i].value)];
+        resultText += `${i + 1}. ${q.q}<br>`;
+        resultText += `&nbsp;&nbsp;✔️ Doğru Cevap: ${correct}<br>`;
+        resultText += `&nbsp;&nbsp;📝 Senin Cevabın: ${user}<br><br>`;
+      });
+      resultText += `</div>`;
+      resultDiv.innerHTML = resultText;
+    }
+
+    function loadQuiz() {
+      const quizDiv = document.getElementById("quiz");
+      questions.forEach((q, i) => {
+        const questionEl = document.createElement("div");
+        questionEl.classList.add("question");
+        questionEl.innerText = `${i + 1}. ${q.q}`;
+
+        const optionsDiv = document.createElement("div");
+        optionsDiv.classList.add("options");
+        q.o.forEach((opt, j) => {
+          const label = document.createElement("label");
+          label.innerHTML = `<input type="radio" name="q${i}" value="${j}"> ${opt}`;
+          optionsDiv.appendChild(label);
+        });
+
+        quizDiv.appendChild(questionEl);
+        quizDiv.appendChild(optionsDiv);
+      });
+    }
+
+    loadQuiz();
+  </script>
+</body>
+</html>
