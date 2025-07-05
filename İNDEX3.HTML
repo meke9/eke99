@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>EKE GAME</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 50px;
+      background-color: #f0f0f0;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .game-container {
+      display: none;
+    }
+    .game-container.active {
+      display: block;
+    }
+
+    /* XOX */
+    #xox-board {
+      border-collapse: collapse;
+      margin: auto;
+    }
+    #xox-board td {
+      width: 100px;
+      height: 100px;
+      font-size: 2em;
+      text-align: center;
+      vertical-align: middle;
+      border: 2px solid #333;
+      cursor: pointer;
+    }
+
+    /* HARF BULMA */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(5, 80px);
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+      perspective: 1000px;
+    }
+    .card {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      position: relative;
+    }
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+    .card .front, .card .back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      font-size: 36px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 8px;
+    }
+    .card .front {
+      background-color: #283787;
+      color: white;
+    }
+    .card .back {
+      background-color: #f7f01d;
+      color: black;
+      transform: rotateY(180deg);
+    }
+    #message {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .footer {
+  background-color: #222;
+  color: #fff;
+  padding: 20px 0;
+  text-align: center;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  margin-top: 50px;
+}
+
+.footer-content a {
+  color: #f0f0f0;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.footer-content a:hover {
+  text-decoration: underline;
+}
+    .footer-content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Oyun Sayfasına Hoş Geldiniz</h1>
+  <button onclick="showGame('game1')">XOX Oyunu</button>
+  <button onclick="showGame('game2')">Harf Bulma</button>
+
+  <!-- XOX Oyunu -->
+  <div id="game1" class="game-container">
+    <h2>XOX Oyunu</h2>
+    <p id="status"></p>
+    <table id="xox-board">
+      <tr>
+        <td onclick="playMove(this, 0, 0)"></td>
+        <td onclick="playMove(this, 0, 1)"></td>
+        <td onclick="playMove(this, 0, 2)"></td>
+      </tr>
+      <tr>
+        <td onclick="playMove(this, 1, 0)"></td>
+        <td onclick="playMove(this, 1, 1)"></td>
+        <td onclick="playMove(this, 1, 2)"></td>
+      </tr>
+      <tr>
+        <td onclick="playMove(this, 2, 0)"></td>
+        <td onclick="playMove(this, 2, 1)"></td>
+        <td onclick="playMove(this, 2, 2)"></td>
+      </tr>
+    </table>
+    <br>
+    <button onclick="resetGame()">Yeniden Başlat</button>
+  </div>
+
+  <!-- Harf Bulma -->
+  <div id="game2" class="game-container">
+    <h2>Harf Eşleştirme Oyunu</h2>
+    <div class="board" id="board"></div>
+    <div id="message"></div>
+    <br>
+    <button onclick="initializeLetterGame()">Yeniden Başlat</button>
+  </div>
+
+  <script>
+    function showGame(id) {
+      document.querySelectorAll('.game-container').forEach(el => el.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // XOX
+    let currentPlayer = "X";
+    let xoxBoard = [["", "", ""], ["", "", ""], ["", "", ""]];
+    let xoxOver = false;
+
+    function playMove(cell, row, col) {
+      if (!xoxOver && xoxBoard[row][col] === "") {
+        cell.textContent = currentPlayer;
+        xoxBoard[row][col] = currentPlayer;
+        checkWinner();
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+      }
+    }
+
+    function checkWinner() {
+      const winPatterns = [
+        [[0, 0], [0, 1], [0, 2]],
+        [[1, 0], [1, 1], [1, 2]],
+        [[2, 0], [2, 1], [2, 2]],
+        [[0, 0], [1, 0], [2, 0]],
+        [[0, 1], [1, 1], [2, 1]],
+        [[0, 2], [1, 2], [2, 2]],
+        [[0, 0], [1, 1], [2, 2]],
+        [[0, 2], [1, 1], [2, 0]]
+      ];
+      for (const pattern of winPatterns) {
+        const [a, b, c] = pattern;
+        if (
+          xoxBoard[a[0]][a[1]] &&
+          xoxBoard[a[0]][a[1]] === xoxBoard[b[0]][b[1]] &&
+          xoxBoard[a[0]][a[1]] === xoxBoard[c[0]][c[1]]
+        ) {
+          document.getElementById("status").textContent = `${xoxBoard[a[0]][a[1]]} Kazandı!`;
+          xoxOver = true;
+          return;
+        }
+      }
+      if (xoxBoard.flat().every(cell => cell !== "")) {
+        document.getElementById("status").textContent = "Berabere!";
+        xoxOver = true;
+      }
+    }
+
+    function resetGame() {
+      xoxBoard = [["", "", ""], ["", "", ""], ["", "", ""]];
+      xoxOver = false;
+      currentPlayer = "X";
+      document.getElementById("status").textContent = "";
+      document.querySelectorAll("#xox-board td").forEach(cell => cell.textContent = "");
+    }
+
+    // Harf Bulma
+    const letters = ['A', 'B', 'C', 'D', 'E', 'A', 'B', 'C', 'D', 'E'];
+    let flippedCards = [];
+    let matchedCards = 0;
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function createCard(letter) {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.dataset.letter = letter;
+
+      const front = document.createElement('div');
+      front.classList.add('front');
+      front.textContent = "?";
+
+      const back = document.createElement('div');
+      back.classList.add('back');
+      back.textContent = letter;
+
+      card.appendChild(front);
+      card.appendChild(back);
+
+      card.addEventListener('click', function () {
+        if (card.classList.contains('flipped') || flippedCards.length === 2) return;
+        card.classList.add('flipped');
+        flippedCards.push(card);
+        if (flippedCards.length === 2) checkMatch();
+      });
+
+      return card;
+    }
+
+    function checkMatch() {
+      const [a, b] = flippedCards;
+      if (a.dataset.letter === b.dataset.letter) {
+        matchedCards++;
+        flippedCards = [];
+        if (matchedCards === letters.length / 2) {
+          document.getElementById("message").textContent = "🎉 Tebrikler! Tüm harfleri eşleştirdiniz. Artık FENERBAHÇELİSİNİZ.";
+        }
+      } else {
+        setTimeout(() => {
+          a.classList.remove('flipped');
+          b.classList.remove('flipped');
+          flippedCards = [];
+        }, 1000);
+      }
+    }
+
+    function initializeLetterGame() {
+      matchedCards = 0;
+      flippedCards = [];
+      shuffle(letters);
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      document.getElementById("message").textContent = "";
+      letters.forEach(letter => {
+        const card = createCard(letter);
+        board.appendChild(card);
+      });
+    }
+
+    // Sayfa yüklenince harf oyunu hazırla
+    window.onload = () => {
+      initializeLetterGame();
+      showGame('game1'); // ilk olarak XOX açık gelsin
+    };
+  </script>
+
+</body>
+</html>
+<!-- This HTML file contains two games: XOX and a letter matching game. -->
+ <footer class="footer">
+  <div class="footer-content">
+    <p>&copy; 2025 Tüm Hakları Saklıdır - EKE Games</p>
+    <P>MUHAMMED EKE</P>
+    <p><a href="#">İletişim</a> | <a href="#">Gizlilik</a></p>
+  </div>
+</footer>
+<!-- The XOX game allows two players to play Tic-Tac-Toe, while the letter matching game involves flipping cards to find matching letters. -->
+<!-- The page includes buttons to switch between games and reset them. -->  
